@@ -98,6 +98,7 @@ npm run start
 	- في Cloudflare Pages افتح `Settings > Environment variables` وأضف `DATABASE_URL` كـ Secret لبيئتي `Production` و`Preview`، مع تفعيلها لمرحلة `Build` و`Deploy`. ملف `.dev.vars` يعمل محليًا فقط ولا يتم رفعه إلى GitHub.
 	- أعد تشغيل deployment بعد إضافة المتغير؛ Prisma يحتاج `DATABASE_URL` أثناء تثبيت الحزم وتوليد العميل ومرحلة build، وليس أثناء تشغيل Worker فقط.
 	- للنشر على Cloudflare Workers استخدم Build command: `npm run cloudflare:build`، وDeploy command: `npm run deploy` أو `npx opennextjs-cloudflare deploy`. لا تستخدم `npx wrangler deploy` مباشرة لأنه يطلق إعداد OpenNext تلقائيًا.
+	- أضف أيضًا متغيري Build غير السريين `WRANGLER_BUILD_CONDITIONS` بقيمة فارغة و`WRANGLER_BUILD_PLATFORM` بقيمة `node` لتجنب تضمين ملفات SWC الأصلية داخل Worker.
 5. بعد اختبار قاعدة Neon على بيئة منفصلة، أنشئ schema باستخدام `npm run db:push:postgres` مع `DATABASE_URL` الخاص بـNeon، ثم شغّل `npm run db:seed:full` لاستعادة البيانات.
 
 ## 🛠️ التقنيات | Tech Stack
