@@ -15,12 +15,32 @@ function getDatabaseUrl() {
 	}
 }
 
-const databaseUrl = getDatabaseUrl();
-const isPostgres = /^(postgres|postgresql):\/\//i.test(databaseUrl);
+function createPrismaClient() {
+	const databaseUrl = getDatabaseUrl();
+	const isPostgres = /^(postgres|postgresql):\/\//i.test(databaseUrl);
 
-const prisma = isPostgres
-	? new PrismaClient({ adapter: new PrismaNeonHTTP(databaseUrl, {}) })
-	: new PrismaClient();
+	if (isPostgres) {
+		return new PrismaClient({ adapter: new PrismaNeonHTTP(databaseUrl, {}) });
+	}
 
-export const db = globalForPrisma.prisma ?? prisma;
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
+	if (process.env.NODE_ENV === 'production') {
+		throw new Error('DATABASE_URL is not available in the Cloudflare request context.');
+	}
+
+	return new PrismaClient();
+}
+
+function getPrismaClient() {
+	if (!globalForPrisma.prisma) {
+		globalForPrisma.prisma = createPrismaClient();
+	}
+
+	return globalForPrisma.prisma;
+}
+
+export const db = new Proxy({} as PrismaClient, {
+	get(_target, property) {
+		const value = getPrismaClient()[property as keyof PrismaClient];
+		return typeof value === 'function' ? value.bind(getPrismaClient()) : value;
+	},
+});
