@@ -2,45 +2,92 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { PrismaNeonHTTP } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
-
-function getDatabaseUrl() {
-	if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-
-	try {
-		const { env } = getCloudflareContext();
-		return (env as Record<string, string | undefined>).DATABASE_URL ?? '';
-	} catch {
-		return '';
-	}
+interface CloudflareContextLike {
+  env: Record<string, unknown>;
+  ctx: object;
 }
 
-function createPrismaClient() {
-	const databaseUrl = getDatabaseUrl();
-	const isPostgres = /^(postgres|postgresql):\/\//i.test(databaseUrl);
-
-	if (isPostgres) {
-		return new PrismaClient({ adapter: new PrismaNeonHTTP(databaseUrl, {}) });
-	}
-
-	if (process.env.NODE_ENV === 'production') {
-		throw new Error('DATABASE_URL is not available in the Cloudflare request context.');
-	}
-
-	return new PrismaClient();
+interface PrismaState {
+  requestClients: WeakMap<object, PrismaClient>;
+  localClient?: PrismaClient;
 }
 
-function getPrismaClient() {
-	if (!globalForPrisma.prisma) {
-		globalForPrisma.prisma = createPrismaClient();
-	}
+const globalForPrisma = globalThis as typeof globalThis & {
+  __amiraPrismaState?: PrismaState;
+};
 
-	return globalForPrisma.prisma;
+const state: PrismaState = (globalForPrisma.__amiraPrismaState ??= {
+  requestClients: new WeakMap<object, PrismaClient>(),
+});
+
+function isPostgresUrl(value: string): boolean {
+  return /^(postgres|postgresql):\/\//i.test(value.trim());
+}
+
+function createNeonClient(databaseUrl: string): PrismaClient {
+  if (!isPostgresUrl(databaseUrl)) {
+    throw new Error('DATABASE_URL must be a PostgreSQL/Neon connection string in Cloudflare runtime.');
+  }
+
+  return new PrismaClient({
+    adapter: new PrismaNeonHTTP(databaseUrl.trim(), {}),
+  });
+}
+
+function getCloudflareDatabaseContext(): { databaseUrl: string; requestKey: object } | null {
+  try {
+    const context = getCloudflareContext() as CloudflareContextLike;
+    const env = context.env;
+    const databaseUrl =
+      typeof env.DATABASE_URL === 'string'
+        ? env.DATABASE_URL.trim()
+        : typeof process.env.DATABASE_URL === 'string'
+          ? process.env.DATABASE_URL.trim()
+          : '';
+
+    if (databaseUrl && isPostgresUrl(databaseUrl)) {
+      return { databaseUrl, requestKey: context.ctx };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function getPrismaClient(): PrismaClient {
+  const cloudflare = getCloudflareDatabaseContext();
+  if (cloudflare) {
+    const cached = state.requestClients.get(cloudflare.requestKey);
+    if (cached) return cached;
+
+    const client = createNeonClient(cloudflare.databaseUrl);
+    state.requestClients.set(cloudflare.requestKey, client);
+    return client;
+  }
+
+  const databaseUrl = process.env.DATABASE_URL?.trim() ?? '';
+
+  // Keep local Node.js development compatible with both SQLite and PostgreSQL.
+  if (databaseUrl && isPostgresUrl(databaseUrl)) {
+    state.localClient ??= createNeonClient(databaseUrl);
+    return state.localClient;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'DATABASE_URL is missing from the Cloudflare Worker runtime. Configure it as a Worker secret named DATABASE_URL.',
+    );
+  }
+
+  state.localClient ??= new PrismaClient();
+  return state.localClient;
 }
 
 export const db = new Proxy({} as PrismaClient, {
-	get(_target, property) {
-		const value = getPrismaClient()[property as keyof PrismaClient];
-		return typeof value === 'function' ? value.bind(getPrismaClient()) : value;
-	},
+  get(_target, property: PropertyKey) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client as object, property, client);
+    return typeof value === 'function' ? value.bind(client) : value;
+  },
 });

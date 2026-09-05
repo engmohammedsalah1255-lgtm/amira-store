@@ -25,7 +25,7 @@ export async function getMainCategories(locale: string) {
     where: { parentId: null, isActive: true },
     include: {
       translations: true,
-      image: true,
+      image: { select: { id: true } },
       children: {
         where: { isActive: true },
         include: { translations: true },
@@ -62,6 +62,7 @@ export async function getMainCategories(locale: string) {
 export async function getHeroBanners() {
   return db.banner.findMany({
     where: { type: 'HERO', isActive: true },
+    select: { id: true, titleAr: true, titleEn: true, subtitleAr: true, subtitleEn: true, ctaTextAr: true, ctaTextEn: true, ctaLink: true },
     orderBy: { order: 'asc' },
   });
 }
@@ -70,6 +71,7 @@ export async function getHeroBanners() {
 export async function getPromoBanners() {
   return db.banner.findMany({
     where: { type: 'PROMO', isActive: true },
+    select: { id: true, titleAr: true, titleEn: true, subtitleAr: true, subtitleEn: true, ctaTextAr: true, ctaTextEn: true, ctaLink: true },
     orderBy: { order: 'asc' },
   });
 }
@@ -83,12 +85,17 @@ export async function getPromoBanners() {
 export async function getFeaturedProducts(locale: string, limit: number = 12) {
   const products = await db.product.findMany({
     where: { isActive: true, isDeleted: false, isFeatured: true },
-    include: {
-      translations: true,
-      images: { orderBy: { order: 'asc' } },
-      variants: true,
-      reviews: { where: { isApproved: true } },
-      category: { include: { translations: true } },
+    select: {
+      id: true,
+      slug: true,
+      sku: true,
+      price: true,
+      comparePrice: true,
+      translations: { select: { locale: true, name: true, shortDescription: true } },
+      images: { select: { id: true }, orderBy: { order: 'asc' }, take: 1 },
+      variants: { select: { stock: true } },
+      reviews: { where: { isApproved: true }, select: { rating: true } },
+      category: { select: { translations: { select: { locale: true, name: true } } } },
     },
     orderBy: { createdAt: 'desc' },
     take: limit,
@@ -127,7 +134,7 @@ export async function getCategoryBySlug(slug: string, locale: string) {
     where: { slug },
     include: {
       translations: true,
-      image: true,
+      image: { select: { id: true } },
       parent: {
         include: {
           translations: true,
@@ -138,7 +145,7 @@ export async function getCategoryBySlug(slug: string, locale: string) {
         where: { isActive: true },
         include: {
           translations: true,
-          image: true,
+          image: { select: { id: true } },
           children: {
             where: { isActive: true },
             include: { translations: true },
@@ -268,12 +275,17 @@ export async function getProductsByCategory(
     db.product.count({ where }),
     db.product.findMany({
       where,
-      include: {
-        translations: true,
-        images: { orderBy: { order: 'asc' } },
-        variants: true,
-        reviews: { where: { isApproved: true } },
-        category: { include: { translations: true } },
+      select: {
+        id: true,
+        slug: true,
+        sku: true,
+        price: true,
+        comparePrice: true,
+        translations: { select: { locale: true, name: true, shortDescription: true } },
+        images: { select: { id: true }, orderBy: { order: 'asc' }, take: 1 },
+        variants: { select: { stock: true } },
+        reviews: { where: { isApproved: true }, select: { rating: true } },
+        category: { select: { translations: { select: { locale: true, name: true } } } },
       },
       orderBy,
       skip: (page - 1) * pageSize,
@@ -371,12 +383,17 @@ export async function getAllProducts(
     db.product.count({ where }),
     db.product.findMany({
       where,
-      include: {
-        translations: true,
-        images: { orderBy: { order: 'asc' } },
-        variants: true,
-        reviews: { where: { isApproved: true } },
-        category: { include: { translations: true } },
+      select: {
+        id: true,
+        slug: true,
+        sku: true,
+        price: true,
+        comparePrice: true,
+        translations: { select: { locale: true, name: true, shortDescription: true } },
+        images: { select: { id: true }, orderBy: { order: 'asc' }, take: 1 },
+        variants: { select: { stock: true } },
+        reviews: { where: { isApproved: true }, select: { rating: true } },
+        category: { select: { translations: { select: { locale: true, name: true } } } },
       },
       orderBy,
       skip: (page - 1) * pageSize,
@@ -425,7 +442,10 @@ export async function getProductBySlug(slug: string, locale: string) {
     include: {
       translations: true,
       tags: true,
-      images: { orderBy: { order: 'asc' } },
+      images: {
+        select: { id: true, altAr: true, altEn: true, isPrimary: true, order: true },
+        orderBy: { order: 'asc' },
+      },
       variants: true,
       reviews: {
         where: { isApproved: true },
@@ -527,12 +547,17 @@ export async function getRelatedProducts(productId: string, locale: string, limi
     },
     include: {
       relatedProduct: {
-        include: {
-          translations: true,
-          images: { orderBy: { order: 'asc' } },
-          variants: true,
-          reviews: { where: { isApproved: true } },
-          category: { include: { translations: true } },
+        select: {
+          id: true,
+          slug: true,
+          sku: true,
+          price: true,
+          comparePrice: true,
+          translations: { select: { locale: true, name: true, shortDescription: true } },
+          images: { select: { id: true }, orderBy: { order: 'asc' }, take: 1 },
+          variants: { select: { stock: true } },
+          reviews: { where: { isApproved: true }, select: { rating: true } },
+          category: { select: { translations: { select: { locale: true, name: true } } } },
         },
       },
     },

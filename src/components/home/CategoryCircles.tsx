@@ -5,7 +5,7 @@ type Category = {
   id: string;
   slug: string;
   name: string;
-  image?: { id: string; base64Data: string; mimeType: string } | null;
+  image?: { id: string } | null;
 };
 
 export function CategoryCircles({ categories }: { categories: Category[] }) {

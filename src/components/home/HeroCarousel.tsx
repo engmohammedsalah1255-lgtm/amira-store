@@ -6,8 +6,6 @@ import { Link } from '@/i18n/routing';
 
 type HeroBanner = {
   id: string;
-  base64Data: string;
-  mimeType: string;
   titleAr: string | null;
   titleEn: string | null;
   subtitleAr: string | null;

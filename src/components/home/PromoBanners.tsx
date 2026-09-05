@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 
 type PromoBanner = {
   id: string;
-  base64Data: string;
-  mimeType: string;
   titleAr: string | null;
   titleEn: string | null;
   subtitleAr: string | null;

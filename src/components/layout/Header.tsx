@@ -27,7 +27,7 @@ type Category = {
   id: string;
   slug: string;
   name: string;
-  image?: { base64Data: string; mimeType: string } | null;
+  image?: { id: string } | null;
   children: { id: string; slug: string; name: string }[];
 };
 

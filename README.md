@@ -94,9 +94,9 @@ npm run start
 1. أنشئ قاعدة بيانات على [neon.tech](https://neon.tech)
 2. احتفظ بالـschemaين كما هما: `schema.prisma` لـSQLite و`schema.postgresql.prisma` لـNeon/PostgreSQL.
 3. ارفع الكود على GitHub
-4. على Vercel أو Cloudflare: Import Repository + أضف Environment Variables (`DATABASE_URL`, `JWT_SECRET`, etc.). يجب أن تكون `DATABASE_URL` قيمة اتصال PostgreSQL كاملة تبدأ بـ `postgresql://` أو `postgres://`؛ لا تستخدم قيمة SQLite المحلية `file:../database/custom.db` في الإنتاج.
-	- في Cloudflare Pages افتح `Settings > Environment variables` وأضف `DATABASE_URL` كـ Secret لبيئتي `Production` و`Preview`، مع تفعيلها لمرحلة `Build` و`Deploy`. ملف `.dev.vars` يعمل محليًا فقط ولا يتم رفعه إلى GitHub.
-	- أعد تشغيل deployment بعد إضافة المتغير؛ Prisma يحتاج `DATABASE_URL` أثناء تثبيت الحزم وتوليد العميل ومرحلة build، وليس أثناء تشغيل Worker فقط.
+4. على Cloudflare Workers: أضف `DATABASE_URL` و`JWT_SECRET` كـ Worker Secrets. يجب أن تكون `DATABASE_URL` قيمة اتصال PostgreSQL كاملة تبدأ بـ `postgresql://` أو `postgres://`؛ لا تستخدم قيمة SQLite المحلية `file:../database/custom.db` في الإنتاج.
+	- في Cloudflare Workers استخدم `Settings > Variables and Secrets` وأضف `DATABASE_URL` و`JWT_SECRET` كـ Secrets. ملف `.dev.vars` يعمل محليًا فقط ولا يتم رفعه إلى GitHub.
+	- أعد تشغيل deployment بعد إضافة الأسرار. عملية Cloudflare build تولّد Prisma client بموفر PostgreSQL، بينما يحتاج Worker الأسرار وقت التشغيل لتنفيذ الاستعلامات.
 	- للنشر على Cloudflare Workers استخدم Build command: `npm run cloudflare:build`، وDeploy command: `npm run deploy` أو `npx opennextjs-cloudflare deploy`. لا تستخدم `npx wrangler deploy` مباشرة لأنه يطلق إعداد OpenNext تلقائيًا.
 	- أضف أيضًا متغيري Build غير السريين `WRANGLER_BUILD_CONDITIONS` بقيمة فارغة و`WRANGLER_BUILD_PLATFORM` بقيمة `node` لتجنب تضمين ملفات SWC الأصلية داخل Worker.
 5. بعد اختبار قاعدة Neon على بيئة منفصلة، أنشئ schema باستخدام `npm run db:push:postgres` مع `DATABASE_URL` الخاص بـNeon، ثم شغّل `npm run db:seed:full` لاستعادة البيانات.

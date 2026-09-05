@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
+const args = new Set(process.argv.slice(2));
 const databaseUrl = process.env.DATABASE_URL ?? '';
-const isPostgres = /^(postgres|postgresql):\/\//i.test(databaseUrl);
+const isPostgres = args.has('--postgres') || /^(postgres|postgresql):\/\//i.test(databaseUrl);
 const schema = isPostgres
   ? 'prisma/schema.postgresql.prisma'
   : 'prisma/schema.prisma';

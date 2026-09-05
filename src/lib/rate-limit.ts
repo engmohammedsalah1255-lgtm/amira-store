@@ -10,11 +10,15 @@ function now() {
 }
 
 function getClientAddress(req: NextRequest): string {
+  const cloudflareIp = req.headers.get('cf-connecting-ip')?.trim();
+  if (cloudflareIp) return cloudflareIp;
+
   const forwardedFor = req.headers.get('x-forwarded-for');
   if (forwardedFor) {
     const first = forwardedFor.split(',')[0]?.trim();
     if (first) return first;
   }
+
   return req.headers.get('x-real-ip')?.trim() || 'unknown';
 }
 
