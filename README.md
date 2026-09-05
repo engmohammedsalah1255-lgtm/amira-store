@@ -97,6 +97,7 @@ npm run start
 4. على Vercel أو Cloudflare: Import Repository + أضف Environment Variables (`DATABASE_URL`, `JWT_SECRET`, etc.). يجب أن تكون `DATABASE_URL` قيمة اتصال PostgreSQL كاملة تبدأ بـ `postgresql://` أو `postgres://`؛ لا تستخدم قيمة SQLite المحلية `file:../database/custom.db` في الإنتاج.
 	- في Cloudflare Pages افتح `Settings > Environment variables` وأضف `DATABASE_URL` كـ Secret لبيئتي `Production` و`Preview`، مع تفعيلها لمرحلة `Build` و`Deploy`. ملف `.dev.vars` يعمل محليًا فقط ولا يتم رفعه إلى GitHub.
 	- أعد تشغيل deployment بعد إضافة المتغير؛ Prisma يحتاج `DATABASE_URL` أثناء تثبيت الحزم وتوليد العميل ومرحلة build، وليس أثناء تشغيل Worker فقط.
+	- للنشر على Cloudflare Workers استخدم Build command: `npm run cloudflare:build`، وDeploy command: `npm run deploy` أو `npx opennextjs-cloudflare deploy`. لا تستخدم `npx wrangler deploy` مباشرة لأنه يطلق إعداد OpenNext تلقائيًا.
 5. بعد اختبار قاعدة Neon على بيئة منفصلة، أنشئ schema باستخدام `npm run db:push:postgres` مع `DATABASE_URL` الخاص بـNeon، ثم شغّل `npm run db:seed:full` لاستعادة البيانات.
 
 ## 🛠️ التقنيات | Tech Stack

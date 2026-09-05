@@ -64,3 +64,5 @@ server.log
 
 .vercel
 .env*
+.open-next/
+worker-configuration.d.ts
