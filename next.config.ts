@@ -6,7 +6,13 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  serverExternalPackages: ['@prisma/client', '.prisma/client'],
+  serverExternalPackages: [
+    '@prisma/client',
+    '.prisma/client',
+    'next-intl/plugin',
+    '@swc/core',
+    '@swc/wasm',
+  ],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
