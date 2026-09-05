@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build && node scripts/prepare-standalone.mjs",
+    "build": "node scripts/validate-database-url.mjs && next build && node scripts/prepare-standalone.mjs",
     "postinstall": "node scripts/generate-prisma-client.mjs",
     "start": "node .next/standalone/server.js",
     "lint": "eslint .",

@@ -10,6 +10,8 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { ChatWidget } from '@/components/ai/ChatWidget';
 import '../globals.css';
 
+export const dynamic = 'force-dynamic';
+
 // English fonts
 const inter = Inter({
   subsets: ['latin'],

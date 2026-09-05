@@ -94,7 +94,7 @@ npm run start
 1. أنشئ قاعدة بيانات على [neon.tech](https://neon.tech)
 2. احتفظ بالـschemaين كما هما: `schema.prisma` لـSQLite و`schema.postgresql.prisma` لـNeon/PostgreSQL.
 3. ارفع الكود على GitHub
-4. على Vercel: Import Repository + أضف Environment Variables (DATABASE_URL, JWT_SECRET, etc.)
+4. على Vercel أو Cloudflare: Import Repository + أضف Environment Variables (`DATABASE_URL`, `JWT_SECRET`, etc.). يجب أن تكون `DATABASE_URL` قيمة اتصال PostgreSQL كاملة تبدأ بـ `postgresql://` أو `postgres://`؛ لا تستخدم قيمة SQLite المحلية `file:../database/custom.db` في الإنتاج.
 5. بعد اختبار قاعدة Neon على بيئة منفصلة، أنشئ schema باستخدام `npm run db:push:postgres` مع `DATABASE_URL` الخاص بـNeon، ثم شغّل `npm run db:seed:full` لاستعادة البيانات.
 
 ## 🛠️ التقنيات | Tech Stack
