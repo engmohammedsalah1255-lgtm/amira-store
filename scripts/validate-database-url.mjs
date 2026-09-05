@@ -8,7 +8,7 @@ loadEnvConfig(process.cwd());
 const databaseUrl = (process.env.DATABASE_URL ?? '').trim();
 
 if (!databaseUrl) {
-  console.error('DATABASE_URL is required. Set a postgresql:// URL in the deployment environment.');
+  console.error('DATABASE_URL is required during the Cloudflare build. Add it as a production build variable/secret in Cloudflare Pages.');
   process.exit(1);
 }
 
