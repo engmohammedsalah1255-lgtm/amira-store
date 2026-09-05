@@ -98,10 +98,12 @@ async function main() {
   // ---- 1. Create Admin User ----
   console.log('👤 Creating admin user...');
   const passwordHash = await bcrypt.hash(adminPassword, 10);
+  const exportedAdmin = (dump.user || []).find((user) => user.username === ADMIN_USERNAME);
   await db.user.upsert({
     where: { username: ADMIN_USERNAME },
     update: {},
     create: {
+      id: exportedAdmin?.id,
       username: ADMIN_USERNAME,
       phone: ADMIN_PHONE,
       fullName: 'Store Administrator',
