@@ -2,11 +2,6 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { PrismaNeonHTTP } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 
-interface CloudflareContextLike {
-  env: Record<string, unknown>;
-  ctx: object;
-}
-
 interface PrismaState {
   requestClients: WeakMap<object, PrismaClient>;
   localClient?: PrismaClient;
@@ -36,8 +31,8 @@ function createNeonClient(databaseUrl: string): PrismaClient {
 
 function getCloudflareDatabaseContext(): { databaseUrl: string; requestKey: object } | null {
   try {
-    const context = getCloudflareContext() as CloudflareContextLike;
-    const env = context.env;
+    const context = getCloudflareContext();
+    const env = context.env as unknown as { DATABASE_URL?: string };
     const databaseUrl =
       typeof env.DATABASE_URL === 'string'
         ? env.DATABASE_URL.trim()
